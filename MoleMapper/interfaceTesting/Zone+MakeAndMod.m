@@ -1,0 +1,331 @@
+//
+//  Zone+MakeAndMod.m
+//  interfaceTesting
+//
+//  Created by Dan Webster on 7/13/13.
+// Copyright (c) 2016, 2017 OHSU. All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+// 1.  Redistributions of source code must retain the above copyright notice, this
+// list of conditions and the following disclaimer.
+//
+// 2.  Redistributions in binary form must reproduce the above copyright notice,
+// this list of conditions and the following disclaimer in the documentation and/or
+// other materials provided with the distribution.
+//
+// 3.  Neither the name of the copyright holder(s) nor the names of any contributors
+// may be used to endorse or promote products derived from this software without
+// specific prior written permission. No license is granted to the trademarks of
+// the copyright holders even if such marks are included in this software.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+//
+
+
+#import "Zone+MakeAndMod.h"
+#import "AppDelegate.h"
+#import "Mole.h"
+#import "Measurement.h"
+#import "Measurement+MakeAndMod.h"
+
+@implementation Zone (MakeAndMod)
+
++(NSArray *)allZoneIDs
+{
+    return @[@"1100",
+             @"1200",
+             @"1250",
+             @"1251",
+             @"1300",
+             @"1301",
+             @"1350",
+             @"1351",
+             @"1400",
+             @"1401",
+             @"1450",
+             @"1451",
+             @"1500",
+             @"1501",
+             @"1550",
+             @"1551",
+             @"1600",
+             @"1601",
+             @"1650",
+             @"1651",
+             @"1700",
+             @"1701",
+             @"1750",
+             @"1751",
+             @"1800",
+             @"1801",
+             @"1850",
+             @"1851",
+             @"2100",
+             @"2200",
+             @"2250",
+             @"2251",
+             @"2300",
+             @"2301",
+             @"2350",
+             @"2351",
+             @"2400",
+             @"2401",
+             @"2450",
+             @"2451",
+             @"2500",
+             @"2501",
+             @"2550",
+             @"2551",
+             @"2600",
+             @"2601",
+             @"2650",
+             @"2651",
+             @"2700",
+             @"2701",
+             @"2750",
+             @"2751",
+             @"2800",
+             @"2801",
+             @"2850",
+             @"2851",
+             @"3150",
+             @"3151",
+             @"3170",
+             @"3171",
+             @"3172"];
+}
+
+//create a new Zone with provided parameters or fetch an existing zone
+//Acts like a 'constructor' method
++ (Zone *)zoneForZoneID:(NSString *)zoneID
+          withZonePhotoFileName:(NSString *)zonePhotoFileName
+ inManagedObjectContext:(NSManagedObjectContext *)context;
+{
+    Zone *zone = nil;
+    
+    //This fetch request is formatted following the example here: http://www.raywenderlich.com/999/core-data-tutorial-how-to-use-nsfetchedresultscontroller
+    //The rest is formatted from Paul Hegarty's lecture demo on Photomania
+    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+    
+    NSEntityDescription *entity = [NSEntityDescription entityForName:@"Zone" inManagedObjectContext:context];
+    [fetchRequest setEntity:entity];
+    fetchRequest.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"zoneID" ascending:YES]];
+    fetchRequest.predicate = [NSPredicate predicateWithFormat:@"zoneID = %@", zoneID];
+    
+    NSError *error = nil;
+    NSArray *matches = [context executeFetchRequest:fetchRequest error:&error];
+    
+    if (!matches)
+    {
+        //NSLog(@"Couldn't fetch any matches from zoneForZoneName...");
+    }
+    else if ([matches count] > 1)
+    {
+        //NSLog(@"Pulled out more than 1 match for zoneName: %@",zoneID);
+    }
+    else if ([matches count] == 0)
+    {
+        zone = [NSEntityDescription insertNewObjectForEntityForName:@"Zone"
+                                             inManagedObjectContext:context];
+        
+        zone.zoneID = zoneID;
+        zone.zonePhoto = zonePhotoFileName;
+    }
+    
+    else
+    {
+        zone = [matches lastObject];
+    }
+    
+    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    [appDelegate saveContext];
+    
+    return zone;
+ 
+}
+
+/*
+ Will return the number of moles needing to be re-measured based on the rule that a mole should be re-measured every month.
+ Checks to see if the most recent measurement for all moles has a month that is this current month
+ */
++(int) numberOfMolesNeedingRemeasurementInZone:(NSString *)zoneID
+{
+    
+    int numberOfMolesNeedingRemeasurement = 0;
+    
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"MM"];
+    int currentMonth = [[dateFormatter stringFromDate:[NSDate date]] intValue];
+    AppDelegate *ad = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    NSManagedObjectContext *context = ad.managedObjectContext;
+    
+    NSArray *allMoles = [Zone allMolesInZoneForZoneID:zoneID];
+    for (Mole *mole in allMoles)
+    {
+        Measurement *mostRecent = [Measurement getMostRecentMoleMeasurementForMole:mole withContext:context];
+        if (mostRecent)
+        {
+            NSDate *dateOfMeasurement = mostRecent.date;
+            int mostRecentMeasurementMonth = [[dateFormatter stringFromDate:dateOfMeasurement] intValue];
+            if (mostRecentMeasurementMonth != currentMonth)
+            {
+                numberOfMolesNeedingRemeasurement++;
+            }
+        }
+    }
+    
+    return numberOfMolesNeedingRemeasurement;
+}
+
++(NSArray *)allMolesInZoneForZoneID:(NSString *)zoneID
+{
+    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Mole"];
+    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"moleID" ascending:YES]];
+    request.predicate = [NSPredicate predicateWithFormat:@"whichZone.zoneID = %@", zoneID];
+    NSError *error = nil;
+    AppDelegate *ad = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    NSManagedObjectContext *context = ad.managedObjectContext;
+    NSArray *molesInProvidedZone = [context executeFetchRequest:request error:&error];
+    return molesInProvidedZone;
+}
+
++(void)deleteAllMolesInZone:(Zone *)zone inManagedObjectContext:(NSManagedObjectContext *)context
+{
+    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Mole"];
+    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"moleID" ascending:YES]];
+    request.predicate = [NSPredicate predicateWithFormat:@"whichZone.zoneID = %@", zone.zoneID];
+    NSError *error = nil;
+    
+    NSArray *molesInProvidedZone = [context executeFetchRequest:request error:&error];
+    for (Mole *mole in molesInProvidedZone)
+    {
+        [context deleteObject:mole];
+    }
+    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    [appDelegate saveContext];
+}
+
++ (UIImage *)imageForZoneName:(NSString *)zoneName
+{
+    UIImage *image = nil;
+    NSString *filePath = [Zone imageFullFilepathForZoneID:zoneName];
+    //NSLog(@"Fetched filePath is %@",filePath);
+    //NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    //NSString *documentsPath = [paths objectAtIndex:0]; //Get the docs directory
+    //NSString *imageName = [zoneName stringByAppendingString:@".png"];
+    //NSString *filePath = [documentsPath stringByAppendingPathComponent:imageName];
+    NSData *pngData = [NSData dataWithContentsOfFile:filePath];
+    image = [UIImage imageWithData:pngData];
+    return image;
+}
+
++ (NSString *)imageFullFilepathForZoneID:(NSString *)zoneID
+{
+    NSString *docsDirectory = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
+    return [NSString stringWithFormat:@"%@/zone%@.png",docsDirectory,zoneID];
+}
+
++(NSString *)imageFilenameForZoneID:(NSString *)zoneID
+{
+    NSString *fileName = [NSString stringWithFormat:@"zone%@.png",zoneID];
+    return fileName;
+}
+
++(BOOL)hasValidImageDataForZoneID:(NSString *)zoneID
+{
+    BOOL hasValidImageData = YES;
+    if (!zoneID) {hasValidImageData = NO;}
+    UIImage *zoneImage = [Zone imageForZoneName:zoneID];
+    if (!zoneImage) {hasValidImageData = NO;}
+    CGImageRef cgref = [zoneImage CGImage];
+    CIImage *cim = [zoneImage CIImage];
+    if (cim == nil && cgref == NULL)
+    {
+        hasValidImageData = NO;
+    }
+    return hasValidImageData;
+}
+
++ (NSString *)zoneNameForZoneID:(NSNumber *)zoneID
+{
+    NSDictionary *zoneNameToZoneID =
+    @{
+      @1100 : @"Head",
+      @1200 : @"Neck & Center Chest",
+      @1250 : @"Right Pectoral",
+      @1251 : @"Left Pectoral",
+      @1300 : @"Right Abdomen",
+      @1301 : @"Left Abdomen",
+      @1350 : @"Right Pelvis",
+      @1351 : @"Left Pelvis",
+      @1400 : @"Right Upper Thigh",
+      @1401 : @"Left Upper Thigh",
+      @1450 : @"Right Lower Thigh & Knee",
+      @1451 : @"Left Lower Thigh & Knee",
+      @1500 : @"Right Upper Calf",
+      @1501 : @"Left Upper Calf",
+      @1550 : @"Right Lower Calf",
+      @1551 : @"Left Lower Calf",
+      @1600 : @"Right Ankle & Foot",
+      @1601 : @"Left Ankle & Foot",
+      @1650 : @"Right Shoulder",
+      @1651 : @"Left Shoulder",
+      @1700 : @"Right Upper Arm",
+      @1701 : @"Left Upper Arm",
+      @1750 : @"Right Upper Forearm",
+      @1751 : @"Left Upper Forearm",
+      @1800 : @"Right Lower Forearm",
+      @1801 : @"Left Lower Forearm",
+      @1850 : @"Right Hand",
+      @1851 : @"Left Hand",
+      @2100 : @"Head",
+      @2200 : @"Neck",
+      @2250 : @"Left Upper Back",
+      @2251 : @"Right Upper Back",
+      @2300 : @"Left Lower Back",
+      @2301 : @"Right Lower Back",
+      @2350 : @"Left Glute",
+      @2351 : @"Right Glute",
+      @2400 : @"Left Upper Thigh",
+      @2401 : @"Right Upper Thigh",
+      @2450 : @"Left Lower Thigh & Knee",
+      @2451 : @"Right Lower Thigh & Knee",
+      @2500 : @"Left Upper Calf",
+      @2501 : @"Right Upper Calf",
+      @2550 : @"Left Lower Calf",
+      @2551 : @"Right Lower Calf",
+      @2600 : @"Left Ankle & Foot",
+      @2601 : @"Right Ankle & Foot",
+      @2650 : @"Left Shoulder",
+      @2651 : @"Right Shoulder",
+      @2700 : @"Left Upper Arm",
+      @2701 : @"Right Upper Arm",
+      @2750 : @"Left Elbow",
+      @2751 : @"Right Elbow",
+      @2800 : @"Left Lower Forearm",
+      @2801 : @"Right Lower Forearm",
+      @2850 : @"Left Hand",
+      @2851 : @"Right Hand",
+      @3150 : @"Face: Left Side",
+      @3151 : @"Face: Right Side",
+      @3170 : @"Top of Head",
+      @3171 : @"Face: Front",
+      @3172 : @"Back of Head",
+      };
+    
+    return [zoneNameToZoneID objectForKey:zoneID];
+}
+
+@end
