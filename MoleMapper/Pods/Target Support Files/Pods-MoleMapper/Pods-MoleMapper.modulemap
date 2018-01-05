@@ -1,0 +1,6 @@
+framework module Pods_MoleMapper {
+  umbrella header "Pods-MoleMapper-umbrella.h"
+
+  export *
+  module * { export * }
+}

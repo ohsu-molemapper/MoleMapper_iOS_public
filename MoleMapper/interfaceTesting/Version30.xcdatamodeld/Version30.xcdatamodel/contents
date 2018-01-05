@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="12141" systemVersion="16G29" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="Mole30" representedClassName="Mole30" syncable="YES">
+        <attribute name="moleID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="moleName" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="moleWasRemoved" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
+        <relationship name="moleMeasurements" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="MoleMeasurement30" inverseName="whichMole" inverseEntity="MoleMeasurement30" syncable="YES"/>
+        <relationship name="whichZone" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Zone30" inverseName="moles" inverseEntity="Zone30" syncable="YES"/>
+    </entity>
+    <entity name="MoleMeasurement30" representedClassName="MoleMeasurement30" syncable="YES">
+        <attribute name="calculatedMoleDiameter" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="calculatedSizeBasis" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="moleMeasurementDiameterInPoints" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="moleMeasurementID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="moleMeasurementPhoto" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="moleMeasurementX" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="moleMeasurementY" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="whichMole" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Mole30" inverseName="moleMeasurements" inverseEntity="Mole30" syncable="YES"/>
+        <relationship name="whichZoneMeasurement" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ZoneMeasurement30" inverseName="moleMeasurements" inverseEntity="ZoneMeasurement30" syncable="YES"/>
+    </entity>
+    <entity name="User" representedClassName="User" syncable="YES">
+        <attribute name="mmUserID" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="zones" optional="YES" toMany="YES" deletionRule="No Action" destinationEntity="Zone30" inverseName="whichUser" inverseEntity="Zone30" syncable="YES"/>
+    </entity>
+    <entity name="Zone30" representedClassName="Zone30" syncable="YES">
+        <attribute name="zoneID" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="moles" optional="YES" toMany="YES" deletionRule="No Action" destinationEntity="Mole30" inverseName="whichZone" inverseEntity="Mole30" syncable="YES"/>
+        <relationship name="whichUser" optional="YES" toMany="YES" deletionRule="No Action" destinationEntity="User" inverseName="zones" inverseEntity="User" syncable="YES"/>
+        <relationship name="zoneMeasurements" optional="YES" toMany="YES" deletionRule="No Action" destinationEntity="ZoneMeasurement30" inverseName="whichZone" inverseEntity="ZoneMeasurement30" syncable="YES"/>
+    </entity>
+    <entity name="ZoneMeasurement30" representedClassName="ZoneMeasurement30" syncable="YES">
+        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="displayPhotoFilename" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="fullsizePhotoFilename" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="lensPosition" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="referenceDiameterInMillimeters" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="referenceDiameterInPoints" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="referenceObject" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="referenceX" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="referenceY" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="uploadSuccess" optional="YES" attributeType="Boolean" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="zoneMeasurementID" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="moleMeasurements" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="MoleMeasurement30" inverseName="whichZoneMeasurement" inverseEntity="MoleMeasurement30" syncable="YES"/>
+        <relationship name="whichZone" optional="YES" maxCount="1" deletionRule="No Action" destinationEntity="Zone30" inverseName="zoneMeasurements" inverseEntity="Zone30" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="Mole30" positionX="7560" positionY="576" width="128" height="120"/>
+        <element name="MoleMeasurement30" positionX="7560" positionY="792" width="128" height="193"/>
+        <element name="User" positionX="7056" positionY="576" width="128" height="75"/>
+        <element name="Zone30" positionX="7272" positionY="579" width="128" height="105"/>
+        <element name="ZoneMeasurement30" positionX="7279" positionY="801" width="128" height="238"/>
+    </elements>
+</model>

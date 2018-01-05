@@ -2,14 +2,11 @@
 
 This repository contains the source code for the MoleMapper iOS ResearchKit app, authored and originally developed by Dan Webster.
 
-This code is for informative purposes only. If you would like to participate in the MoleMapper project, please contact us at 
-[molemapper@ohsu.edu](mailto:molemapper@ohsu.edu).
-
 ## License
 
 MoleMapper is available under the BSD license:
 
-	Copyright (c) 2015-2017, Oregon Health and Science University
+	Copyright (c) 2015, Oregon Health and Science University
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
